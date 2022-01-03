@@ -61,7 +61,7 @@ AT+SENDFREQ=3600
 | **AT+SENDFREQ=3600**  |  set the frequency the sensor node will send data packets. 3600 == 60 x 60 seconds == 1 hour |
 
 ## _REMARK_
-The manual for all AT commands can be found here: [AT-Commands.md](https://github.com/beegee-tokyo/WisBlock-API/blob/main/AT-Commands.md) :arrow_heading_up:    
+The manual for all AT commands can be found here: [AT-Commands.md](./AT-Commands.md) :arrow_heading_up:    
 
 2) Use the [WisBlock Toolbox](https://play.google.com/store/apps/details?id=tk.giesecke.wisblock_toolbox) :arrow_heading_up:, connect over Bluetooth with the Soil Sensor and setup the credentials. Do _**NOT**_ activate automatic join yet.
 
@@ -117,7 +117,7 @@ The device is advertising over BLE only the first 30 seconds after power up and 
 ## 2) Setup over USB port
 Using the AT command interface the WisBlock can be setup over the USB port.
 
-A detailed manual for the AT commands are in [AT-Commands.md](https://github.com/beegee-tokyo/WisBlock-API/blob/main/AT-Commands.md) :arrow_heading_up:
+A detailed manual for the AT commands are in [AT-Commands.md](./AT-Commands.md) :arrow_heading_up:
 
 Example setup for LoRaWAN, OTAA join mode, sending data every 60 minutes. DevEUI, AppEUI and AppKey in this example are random choosen and need to be changed to your setup. You need to have a matching device setup in the LPWAN server.
 
