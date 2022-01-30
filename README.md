@@ -213,6 +213,23 @@ _**REMARK**_
 
 ----
 
+# Packet data format
+The packet data is made compatible with the extended Cayenne LPP encoding from [ElectronicCats/CayenneLPP](https://github.com/ElectronicCats/CayenneLPP) ⤴️.  
+
+The packet data is using 5 channels:     
+
+| Data            | Channel # | Channel ID | Length  | Comment        |
+| --              | --        | --         | --      | --             |
+| Humidity        | 1         | 104        | 2 bytes | in %RH         |
+| Temperature     | 2         | 103        | 1 bytes | in °C          |
+| Battery         | 3         | 2          | 2 bytes | in V           |
+| Validity        | 4         | 102        | 2 bytes | true or false  |
+| Raw capacitance | 5         | 2          | 2 bytes | raw value      |
+
+Example decoders for TTN, Chirpstack, Helium and Datacake can be found in [https://github.com/RAKWireless/WisBlock/Cayenne_Ext_LPP] ⤴️
+
+----
+
 # Compiled output
 The compiled files are located in the [./Generated](./Generated) folder. Each successful compiled version is named as      
 **`WisBlock_SOIL_Vx.y.z_YYYYMMddhhmmss`**    
