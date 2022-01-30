@@ -23,18 +23,12 @@ struct calib_values_s
 
 calib_values_s calib_values;
 
-#include <Adafruit_LittleFS.h>
-#include <InternalFileSystem.h>
-using namespace Adafruit_LittleFS_Namespace;
-
-static const char soil_name[] = "SOIL";
-
-File soil_file(InternalFS);
-
 uint8_t read_fail_counter = 0;
 
 bool init_soil(void)
 {
+	MYLOG("SOIL", "Init soil sensor");
+	Serial.flush();
 	// Check if sensors is available
 	bool found_sensor = false;
 	pinMode(WB_IO2, OUTPUT);
@@ -140,10 +134,6 @@ void read_soil(void)
 	if (!sensor.sensor_on())
 	{
 		MYLOG("SOIL", "Can't wake up sensor");
-		if (g_ble_uart_is_connected)
-		{
-			g_ble_uart.println("Can't wake up sensor");
-		}
 		g_soil_data.temp_1 = 0xFF;
 		g_soil_data.temp_2 = 0xFF;
 
@@ -159,7 +149,7 @@ void read_soil(void)
 		{
 			read_fail_counter = 0;
 			delay(1000);
-			NVIC_SystemReset();
+			api_reset();
 		}
 		return;
 	}
@@ -204,12 +194,6 @@ void read_soil(void)
 	MYLOG("SOIL", "Sensor reading was %s", got_value ? "success" : "unsuccessful");
 	MYLOG("SOIL", "T %.2f H %ld C %ld", (double)(avgTemp / 10.0), avgHumid, avgCap);
 
-	if (g_ble_uart_is_connected)
-	{
-		g_ble_uart.printf("Sensor reading was %s\n", got_value ? "success" : "unsuccessful");
-		g_ble_uart.printf("T %.2f H %ld C %ld\n", (double)(avgTemp / 10.0), avgHumid, avgCap);
-	}
-
 	avgHumid = avgHumid * 2.0;
 
 	g_soil_data.temp_1 = (uint8_t)(avgTemp >> 8);
@@ -243,7 +227,7 @@ uint16_t start_calib(bool is_dry)
 	digitalWrite(LED_BLUE, HIGH);
 
 	// Stop app timer while we do calibration
-	g_task_wakeup_timer.stop();
+	api_timer_stop();
 
 	Wire.begin();
 
@@ -255,9 +239,7 @@ uint16_t start_calib(bool is_dry)
 		if (g_lorawan_settings.send_repeat_time != 0)
 		{
 			// Calibration finished, restart the timer that will wakeup the loop frequently
-			g_task_wakeup_timer.stop();
-			g_task_wakeup_timer.setPeriod(g_lorawan_settings.send_repeat_time);
-			g_task_wakeup_timer.start();
+			api_timer_restart(g_lorawan_settings.send_repeat_time);
 		}
 
 		digitalWrite(LED_BLUE, LOW);
@@ -281,8 +263,8 @@ uint16_t start_calib(bool is_dry)
 		new_value += new_reading;
 		new_value = new_value / 2;
 		delay(250);
-		digitalToggle(LED_GREEN);
-		digitalToggle(LED_BLUE);
+		digitalWrite(LED_GREEN, !digitalRead(LED_GREEN));
+		digitalWrite(LED_BLUE, !digitalRead(LED_BLUE));
 	}
 
 	// Send calibration value
@@ -302,9 +284,7 @@ uint16_t start_calib(bool is_dry)
 	if (g_lorawan_settings.send_repeat_time != 0)
 	{
 		// Calibration finished, restart the timer that will wakeup the loop frequently
-		g_task_wakeup_timer.stop();
-		g_task_wakeup_timer.setPeriod(g_lorawan_settings.send_repeat_time);
-		g_task_wakeup_timer.start();
+		api_timer_restart(g_lorawan_settings.send_repeat_time);
 	}
 
 	// Return the result

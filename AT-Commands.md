@@ -1383,6 +1383,7 @@ _**REMARK**_
 [Back](#content)    
 
 ----
+
 ## AT+DRY
 
 Description: Custom AT command to initialize dry calibration and read the dry calibration value
@@ -1391,6 +1392,7 @@ This command is used to start an dry calibration. The result of the calibration 
 
 | Command                    | Input Parameter | Return Value                | Return Code |
 | -------------------------- | --------------- | --------------------------- | ----------- |
+| AT+DRY?                    | -               | *`Get/Set dry calibration value` | `OK`        |
 | AT+DRY=?                    | -               | *`Dry calibration value` | `OK`        |
 | AT+DRY   | -   | -                       | `OK`        |
 
@@ -1420,6 +1422,7 @@ This command is used to start an wet calibration. The result of the calibration 
 
 | Command                    | Input Parameter | Return Value                | Return Code |
 | -------------------------- | --------------- | --------------------------- | ----------- |
+| AT+WET?                    | -               | *`Get/Set wet calibration value` | `OK`        |
 | AT+WET=?                    | -               | *`Wet calibration value` | `OK`        |
 | AT+WET   | -   | -                       | `OK`        |
 

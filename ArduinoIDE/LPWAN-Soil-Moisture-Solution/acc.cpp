@@ -10,7 +10,12 @@
  */
 #include "app.h"
 
+void api_wake_loop(uint16_t reason);
 void acc_int_callback(void);
+void clear_acc_int(void);
+void read_acc(void);
+
+#define ACC_TRIGGER 0b1000000000000000
 
 /** The LIS3DH sensor */
 LIS3DH acc_sensor(I2C_MODE, 0x18);
@@ -75,10 +80,10 @@ bool init_acc(void)
 	acc_sensor.writeRegister(LIS3DH_CTRL_REG3, data_to_write);
 
 	// No interrupt on pin 2
-	acc_sensor.writeRegister(LIS3DH_CTRL_REG6, 0x00); 
+	acc_sensor.writeRegister(LIS3DH_CTRL_REG6, 0x00);
 
 	// Enable high pass filter
-	acc_sensor.writeRegister(LIS3DH_CTRL_REG2, 0x01); 
+	acc_sensor.writeRegister(LIS3DH_CTRL_REG2, 0x01);
 
 	// Set low power mode
 	data_to_write = 0;
@@ -99,7 +104,7 @@ bool init_acc(void)
 	attachInterrupt(INT_ACC_PIN, acc_int_callback, RISING);
 
 	read_acc();
-	
+
 	return true;
 }
 
@@ -121,8 +126,7 @@ void read_acc(void)
  */
 void acc_int_callback(void)
 {
-	g_task_event_type |= ACC_TRIGGER;
-	xSemaphoreGiveFromISR(g_task_sem, pdFALSE);
+	api_wake_loop(ACC_TRIGGER);
 }
 
 /**

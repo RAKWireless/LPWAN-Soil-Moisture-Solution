@@ -13,6 +13,22 @@
 #ifndef APP_H
 #define APP_H
 
+//**********************************************/
+//** Set the application firmware version here */
+//**********************************************/
+// ; major version increase on API change / not backwards compatible
+#ifndef SW_VERSION_1
+#define SW_VERSION_1 1
+#endif
+// ; minor version increase on API change / backward compatible
+#ifndef SW_VERSION_2
+#define SW_VERSION_2 0
+#endif
+// ; patch version increase on bugfix, no affect on API
+#ifndef SW_VERSION_3
+#define SW_VERSION_3 2
+#endif
+
 #include <Arduino.h>
 /** Add you required includes after Arduino.h */
 #include <Wire.h>
@@ -25,13 +41,18 @@
 #endif
 
 #if MY_DEBUG > 0
-#define MYLOG(tag, ...)           \
-	do                            \
-	{                             \
-		if (tag)                  \
-			PRINTF("[%s] ", tag); \
-		PRINTF(__VA_ARGS__);      \
-		PRINTF("\n");             \
+#define MYLOG(tag, ...)                     \
+	do                                      \
+	{                                       \
+		if (tag)                            \
+			PRINTF("[%s] ", tag);           \
+		PRINTF(__VA_ARGS__);                \
+		PRINTF("\n");                       \
+		if (g_ble_uart_is_connected)        \
+		{                                   \
+			g_ble_uart.printf(__VA_ARGS__); \
+			g_ble_uart.println("");         \
+		}                                   \
 	} while (0)
 #else
 #define MYLOG(...)
@@ -48,9 +69,6 @@ void at_settings(void);
 /** Application events */
 #define ACC_TRIGGER 0b1000000000000000
 #define N_ACC_TRIGGER 0b0111111111111111
-
-/** Application stuff */
-extern BaseType_t g_higher_priority_task_woken;
 
 /** Soil sensor stuff */
 #include <RAK12035_SoilMoisture.h>

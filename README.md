@@ -1,6 +1,6 @@
 # WisBlock Soil Moisture Sensor
-| <img src="./assets/RAK-Whirls.png" alt="Modules" width="150"> | <img src="./assets/WisBlock.png" alt="WisBlock" width="150"> | <img src="./assets/rakstar.jpg" alt="RAKstar" width="100"> | <img src="./assets/beegee.png" alt="Bernd" width="100"> |    
-| :-: | :-: | :-: | :-: |      
+| <img src="./assets/RAK-Whirls.png" alt="Modules" width="150"> | <img src="./assets/WisBlock.png" alt="WisBlock" width="150"> | <img src="./assets/rakstar.jpg" alt="RAKstar" width="100"> | <img src="./assets/RAK12023.png" alt="RAK12023" width="100"> | <img src="./assets/RAK12035.png" alt="RAK12035" height="300"> | <img src="./assets/beegee.png" alt="Bernd" width="100"> |    
+| :-: | :-: | :-: | :-: | :-: | :-: |      
 
 This solution is for a soil moisture sensor based on the [WisBlock RAK4631 Core module](https://docs.rakwireless.com/Product-Categories/WisBlock/RAK4631/Overview/) :arrow_heading_up: and the [RAK12023/RAK12035 soil moisture sensor](https://docs.rakwireless.com/Product-Categories/WisBlock/#wisblock-sensor) :arrow_heading_up:.
 
@@ -19,14 +19,19 @@ The application sleeps around between each measurement and puts the soil moistur
 
 # Software used
 - [PlatformIO](https://platformio.org/install) :arrow_heading_up:
+- alternative [ArduinoIDE](https://www.arduino.cc/en/software) :arrow_heading_up:
 - [Adafruit nRF52 BSP](https://docs.platformio.org/en/latest/boards/nordicnrf52/adafruit_feather_nrf52832.html) :arrow_heading_up:
 - [Patch to use RAK4631 with PlatformIO](https://github.com/RAKWireless/WisBlock/blob/master/PlatformIO/RAK4630/README.md) :arrow_heading_up:
 - [WisBlock API](https://github.com/beegee-tokyo/WisBlock-API) :arrow_heading_up:
 - [RAK12035 Soil Moisture library](https://github.com/RAKWireless/RAK12035_SoilMoisture) :arrow_heading_up:
 - [Sparkfun LIS3DH library](https://platformio.org/lib/show/1401/SparkFun%20LIS3DH%20Arduino%20Library)
 
+## _REMARK_     
+The project was developed using Platform IO. But for the users that _**still**_ stick to Arduino IDE, an Arduino IDE compatible copy of the sources is in the ArduinoIDE folder.    
+The complete project for PIO is in the PlatformIO folder.    
+
 ## _REMARK_
-The libraries are all listed in the **`platformio.ini`** and are automatically installed when the project is compiled. The RAK12035_SoilMoisture library might not be published yet. It is included in the repo in the _**lib**_ folder.
+The libraries are all listed in the **`platformio.ini`** and are automatically installed when the project is compiled. 
 
 ## _REMARK_    
 The RAK1904 ACC sensor is used as a **`virtual`** switch. BLE is only active after a power up or reset. If the sensor is in the field and parameters needs to be changed, it would be inconvenient to always open the enclosure. If you tap on the enclosure, the module will wake up and activate the BLE for 15 seconds so that a mobile phone can connect. This way it is very simple to change parameters even on deployed sensors somewhere in the field.    
@@ -136,11 +141,75 @@ AT+JOIN=1,1,10,10
 | --- | --- |
 | **AT+NWM=1**  |  set the node into LoRaWAN mode |
 | **AT+NJM=1**  |  set network join method to OTAA |
-| **AT+BAND=10**  |  set LPWAN region (here AS923-3) see [AT Command Manual](./AT-Commands.md) :arrow_heading_up: for all regions || **AT+DEVEUI=1000000000000001**  |  set the device EUI, best to use the DevEUI that is printed on the label of your WisBlock Core module |
+| **AT+BAND=10**  |  set LPWAN region (here AS923-3) see [AT Command Manual](./AT-Commands.md) :arrow_heading_up: for all regions |
+| **AT+DEVEUI=1000000000000001**  |  set the device EUI, best to use the DevEUI that is printed on the label of your WisBlock Core module |
 | **AT+APPEUI=AB00AB00AB00AB00**  |  set the application EUI, required on the LoRaWAN server  |
 | **AT+APPKEY=AB00AB00AB00AB00AB00AB00AB00AB00**  |  set the application Key, used to encrypt the data packet during network join |
 | **AT+SENDFREQ=3600**  |  set the frequency the sensor node will send data packets. 3600 == 60 x 60 seconds == 1 hour |
 | **AT+JOIN=1,1,10,10**  |  start to join the network, enables as well auto join after a power up or a device reset |
+
+----
+
+# Custom AT commands
+The application supports two custom AT commands for the calibration and reading the calibration values.
+
+## AT+DRY
+
+Description: Custom AT command to initialize dry calibration and read the dry calibration value
+
+This command is used to start an dry calibration. The result of the calibration is stored in the EEPROM of the sensor. This command is used as well to read back the calibrarion value.
+
+| Command                    | Input Parameter | Return Value                | Return Code |
+| -------------------------- | --------------- | --------------------------- | ----------- |
+| AT+DRY?                    | -               | *`Get/Set dry calibration value` | `OK`        |
+| AT+DRY=?                    | -               | *`Dry calibration value` | `OK`        |
+| AT+DRY   | -   | -                       | `OK`        |
+
+**Examples**:
+
+```
+AT+DRY=?
+Dry Calibration Value: 450
+OK
+
+AT+DRY
+Start Dry Calibration
+New Dry Calibration Value: 465
+OK
+```
+_**REMARK**_
+- The calibration value is stored on the sensor, not in the WisBlock Core module. This makes it possible to calibrate the sensor and then use it with another WisBlock Core module without the need to repeat the calibration.
+
+[Back](#content)    
+
+## AT+WET
+
+Description: Custom AT command to initialize wet calibration and read the wet calibration value
+
+This command is used to start an wet calibration. The result of the calibration is stored in the EEPROM of the sensor. This command is used as well to read back the calibrarion value.
+
+| Command                    | Input Parameter | Return Value                | Return Code |
+| -------------------------- | --------------- | --------------------------- | ----------- |
+| AT+WET?                    | -               | *`Get/Set wet calibration value` | `OK`        |
+| AT+WET=?                    | -               | *`Wet calibration value` | `OK`        |
+| AT+WET   | -   | -                       | `OK`        |
+
+**Examples**:
+
+```
+AT+WET=?
+Wet Calibration Value: 660
+OK
+
+AT+WET
+Start Wet Calibration
+New Wet Calibration Value: 685
+OK
+```
+_**REMARK**_
+- The calibration value is stored on the sensor, not in the WisBlock Core module. This makes it possible to calibrate the sensor and then use it with another WisBlock Core module without the need to repeat the calibration.
+
+[Back](#content)    
 
 ----
 
@@ -196,3 +265,16 @@ lib_deps =
 	sparkfun/SparkFun LIS3DH Arduino Library
 extra_scripts = pre:rename.py
 ```
+
+----
+
+# Changelog
+
+## V1.0.2
+  - Smaller changes to match with the lastest version of WisBlock-API
+
+## V1.0.1
+  - First release under the RAKWireless Github account
+
+## V1.0.0
+  - First code, abandoned now.

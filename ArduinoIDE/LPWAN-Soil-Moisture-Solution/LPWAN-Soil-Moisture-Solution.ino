@@ -16,9 +16,6 @@
 /** Set the device name, max length is 10 characters */
 char g_ble_dev_name[10] = "RAK-SOIL";
 
-/** Required for give semaphore from ISR */
-BaseType_t g_higher_priority_task_woken = pdTRUE;
-
 /** Battery level uinion */
 batt_s batt_level;
 
@@ -59,6 +56,7 @@ void setup_app(void)
 		}
 	}
 #endif
+
 	// Enable BLE
 	g_enable_ble = true;
 }
@@ -97,7 +95,7 @@ bool init_app(void)
 	Serial.printf("Soil Moisture Sensor Solution\n");
 	Serial.printf("Built with RAK's WisBlock\n");
 	Serial.printf("SW Version %d.%d.%d\n", g_sw_ver_1, g_sw_ver_2, g_sw_ver_3);
-	Serial.printf("LoRa(R) is a registered trademark or service mark of Semtech Corporation or its affiliates.LoRaWAN(R) is a licensed mark.\n");
+	Serial.printf("LoRa(R) is a registered trademark or service mark of Semtech Corporation or its affiliates.\nLoRaWAN(R) is a licensed mark.\n");
 	Serial.printf("============================\n");
 	at_settings();
 	Serial.printf("============================\n");
@@ -144,8 +142,8 @@ void app_event_handler(void)
 		{
 			if (init_result)
 			{
-		// Get soil sensor values
-		read_soil();
+				// Get soil sensor values
+				read_soil();
 			}
 		}
 
@@ -182,30 +180,19 @@ void app_event_handler(void)
 		if (batt_level.batt16 < 290)
 		{
 			// Battery is very low, change send time to 1 hour to protect battery
-			low_batt_protection = true;						   // Set low_batt_protection active
-			g_task_wakeup_timer.setPeriod(6 * 60 * 60 * 1000); // Set send time to six hour
-			g_task_wakeup_timer.reset();
+			low_batt_protection = true; // Set low_batt_protection active
+			api_timer_restart(6 * 60 * 60 * 1000);
 			MYLOG("APP", "Battery protection activated");
 		}
 		else if ((batt_level.batt16 > 410) && low_batt_protection)
 		{
 			// Battery is higher than 4V, change send time back to original setting
 			low_batt_protection = false;
-			g_task_wakeup_timer.setPeriod(g_lorawan_settings.send_repeat_time);
-			g_task_wakeup_timer.reset();
+			api_timer_restart(g_lorawan_settings.send_repeat_time);
 			MYLOG("APP", "Battery protection deactivated");
 		}
 
 		lmh_error_status result;
-		// bool use_short = false;
-		// if (low_batt_protection)
-		// {
-		// 	use_short = true;
-		// }
-		// if (!init_result)
-		// {
-		// 	use_short = true;
-		// }
 		if (low_batt_protection || !init_result)
 		{
 			MYLOG("APP", "Sending short packet");
@@ -221,24 +208,12 @@ void app_event_handler(void)
 		{
 		case LMH_SUCCESS:
 			MYLOG("APP", "Packet enqueued");
-			if (g_ble_uart_is_connected)
-			{
-				g_ble_uart.println("Packet enqueued");
-			}
 			break;
 		case LMH_BUSY:
 			MYLOG("APP", "LoRa transceiver is busy");
-			if (g_ble_uart_is_connected)
-			{
-				g_ble_uart.println("LoRa transceiver is busy");
-			}
 			break;
 		case LMH_ERROR:
 			MYLOG("APP", "Packet error, too big to send with current DR");
-			if (g_ble_uart_is_connected)
-			{
-				g_ble_uart.println("Packet error, too big to send with current DR");
-			}
 			break;
 		}
 	}
@@ -318,10 +293,6 @@ void lora_data_handler(void)
 		g_task_event_type &= N_LORA_TX_FIN;
 
 		MYLOG("APP", "LPWAN TX cycle %s", g_rx_fin_result ? "finished ACK" : "failed NAK");
-		if (g_ble_uart_is_connected)
-		{
-			g_ble_uart.printf("LPWAN TX cycle %s", g_rx_fin_result ? "finished ACK" : "failed NAK");
-		}
 
 		if ((g_lorawan_settings.confirmed_msg_enabled) && (g_lorawan_settings.lorawan_enable))
 		{
@@ -341,7 +312,7 @@ void lora_data_handler(void)
 			{
 				// Too many failed sendings, reset node and try to rejoin
 				delay(100);
-				sd_nvic_SystemReset();
+				api_reset();
 			}
 		}
 	}
@@ -389,15 +360,6 @@ void lora_data_handler(void)
 			log_idx += 3;
 		}
 		MYLOG("APP", "%s", log_buff);
-
-		if (g_ble_uart_is_connected && g_enable_ble)
-		{
-			for (int idx = 0; idx < g_rx_data_len; idx++)
-			{
-				g_ble_uart.printf("%02X ", g_rx_lora_data[idx]);
-			}
-			g_ble_uart.println("");
-		}
 
 		if (g_rx_data_len > 2)
 		{
