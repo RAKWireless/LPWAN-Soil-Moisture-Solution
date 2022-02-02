@@ -260,8 +260,16 @@ uint16_t start_calib(bool is_dry)
 	for (int readings = 0; readings < 100; readings++)
 	{
 		sensor.get_sensor_capacitance(&new_reading);
+		if (new_reading != 0xFFFF)
+		{
+			MYLOG("SOIL", "Capacitance during %s calibration is %d\n", is_dry ? " DRY" : "WET", new_reading);
 		new_value += new_reading;
 		new_value = new_value / 2;
+		}
+		else
+		{
+			MYLOG("SOIL", "Capacitance reading failed\n");
+		}
 		delay(250);
 		digitalWrite(LED_GREEN, !digitalRead(LED_GREEN));
 		digitalWrite(LED_BLUE, !digitalRead(LED_BLUE));
@@ -271,12 +279,14 @@ uint16_t start_calib(bool is_dry)
 	if (is_dry)
 	{
 		MYLOG("SOIL", "Dry calibration value %d", new_value);
+		// sensor.set_wet_cal(new_value);
 		sensor.set_dry_cal(new_value);
 		calib_values.dry_cal = new_value;
 	}
 	else
 	{
 		MYLOG("SOIL", "Wet calibration value %d", new_value);
+		// sensor.set_dry_cal(new_value);
 		sensor.set_wet_cal(new_value);
 		calib_values.wet_cal = new_value;
 	}
@@ -323,6 +333,30 @@ uint16_t get_calib(bool is_dry)
 		{
 			MYLOG("SOIL", "Sensor Wet Cal %d", value);
 		}
+	}
+	sensor.sensor_sleep();
+	Wire.end();
+	return value;
+}
+
+uint16_t set_calib(bool is_dry, uint16_t calib_val)
+{
+	uint16_t value = 0;
+	Wire.begin();
+	sensor.sensor_on();
+	if (is_dry)
+	{
+		MYLOG("SOIL", "Dry calibration value %d", calib_val);
+		// sensor.set_wet_cal(new_value);
+		sensor.set_dry_cal(calib_val);
+		calib_values.dry_cal = calib_val;
+	}
+	else
+	{
+		MYLOG("SOIL", "Wet calibration value %d", calib_val);
+		// sensor.set_dry_cal(new_value);
+		sensor.set_wet_cal(calib_val);
+		calib_values.wet_cal = calib_val;
 	}
 	sensor.sensor_sleep();
 	Wire.end();

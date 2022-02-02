@@ -78,6 +78,7 @@ uint16_t start_calib(bool is_dry);
 void save_calib(void);
 void read_calib(void);
 uint16_t get_calib(bool is_dry);
+uint16_t set_calib(bool is_dry, uint16_t calib_val);
 extern bool has_acc;
 
 // LoRaWan functions
