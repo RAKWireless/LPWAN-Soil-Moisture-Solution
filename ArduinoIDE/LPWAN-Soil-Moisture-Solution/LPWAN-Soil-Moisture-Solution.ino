@@ -101,13 +101,13 @@ bool init_app(void)
 	Serial.printf("============================\n");
 
 	Wire.begin();
+	// Initialize Soil module
+	init_result = init_soil();
 
 	if (init_acc())
 	{
 		has_acc = true;
 	}
-	// Initialize Soil module
-	init_result = init_soil();
 	return init_result;
 }
 

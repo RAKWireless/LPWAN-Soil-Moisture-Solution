@@ -1,14 +1,14 @@
 /**
  * @file app.cpp
  * @author Bernd Giesecke (bernd.giesecke@rakwireless.com)
- * @brief Application specific functions. Mandatory to have init_app(), 
+ * @brief Application specific functions. Mandatory to have init_app(),
  *        app_event_handler(), ble_data_handler(), lora_data_handler()
  *        and lora_tx_finished()
  * @version 0.1
  * @date 2021-04-23
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 #include "app.h"
@@ -33,7 +33,7 @@ bool init_result = true;
 
 /**
  * @brief Application specific setup functions
- * 
+ *
  */
 void setup_app(void)
 {
@@ -63,7 +63,7 @@ void setup_app(void)
 
 /**
  * @brief Application specific initializations
- * 
+ *
  * @return true Initialization success
  * @return false Initialization failure
  */
@@ -101,13 +101,13 @@ bool init_app(void)
 	Serial.printf("============================\n");
 
 	Wire.begin();
+	// Initialize Soil module
+	init_result = init_soil();
 
 	if (init_acc())
 	{
 		has_acc = true;
 	}
-	// Initialize Soil module
-	init_result = init_soil();
 	return init_result;
 }
 
@@ -235,7 +235,7 @@ void app_event_handler(void)
 
 /**
  * @brief Handle BLE UART data
- * 
+ *
  */
 void ble_data_handler(void)
 {
@@ -262,7 +262,7 @@ void ble_data_handler(void)
 
 /**
  * @brief Handle received LoRa Data
- * 
+ *
  */
 void lora_data_handler(void)
 {

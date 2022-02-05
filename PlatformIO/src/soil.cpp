@@ -33,11 +33,13 @@ bool init_soil(void)
 	bool found_sensor = false;
 	pinMode(WB_IO2, OUTPUT);
 	digitalWrite(WB_IO2, HIGH);
-	pinMode(WB_IO5, INPUT);
+	// pinMode(WB_IO5, INPUT);
 
 	Wire.begin();
 
+
 	// Initialize the sensor
+	sensor.setup(Wire);
 	sensor.begin();
 
 	uint8_t data = 0;
@@ -115,7 +117,7 @@ bool init_soil(void)
 
 	sensor.sensor_sleep();
 
-	Wire.end();
+	// Wire.end();
 
 	return found_sensor;
 }
@@ -130,7 +132,7 @@ void read_soil(void)
 	uint32_t avgCap = 0;
 
 	// Wake up the sensor
-	Wire.begin();
+	// Wire.begin();
 	if (!sensor.sensor_on())
 	{
 		MYLOG("SOIL", "Can't wake up sensor");
@@ -141,7 +143,7 @@ void read_soil(void)
 
 		g_soil_data.valid = 0;
 
-		Wire.end();
+		// Wire.end();
 
 		read_fail_counter++;
 
@@ -214,7 +216,7 @@ void read_soil(void)
 	}
 	sensor.sensor_sleep();
 
-	Wire.end();
+	// Wire.end();
 }
 
 uint16_t start_calib(bool is_dry)
@@ -229,12 +231,12 @@ uint16_t start_calib(bool is_dry)
 	// Stop app timer while we do calibration
 	api_timer_stop();
 
-	Wire.begin();
+	// Wire.begin();
 
 	if (!sensor.sensor_on())
 	{
 		MYLOG("SOIL", "Can't wake up sensor");
-		Wire.end();
+		// Wire.end();
 
 		if (g_lorawan_settings.send_repeat_time != 0)
 		{
@@ -302,7 +304,7 @@ uint16_t start_calib(bool is_dry)
 	digitalWrite(LED_BLUE, LOW);
 	digitalWrite(LED_GREEN, LOW);
 	sensor.sensor_sleep();
-	Wire.end();
+	// Wire.end();
 
 	return new_value;
 }
@@ -310,7 +312,7 @@ uint16_t start_calib(bool is_dry)
 uint16_t get_calib(bool is_dry)
 {
 	uint16_t value = 0;
-	Wire.begin();
+	// Wire.begin();
 	sensor.sensor_on();
 	if (is_dry)
 	{
@@ -335,14 +337,14 @@ uint16_t get_calib(bool is_dry)
 		}
 	}
 	sensor.sensor_sleep();
-	Wire.end();
+	// Wire.end();
 	return value;
 }
 
 uint16_t set_calib(bool is_dry, uint16_t calib_val)
 {
 	uint16_t value = 0;
-	Wire.begin();
+	// Wire.begin();
 	sensor.sensor_on();
 	if (is_dry)
 	{
@@ -359,6 +361,6 @@ uint16_t set_calib(bool is_dry, uint16_t calib_val)
 		calib_values.wet_cal = calib_val;
 	}
 	sensor.sensor_sleep();
-	Wire.end();
+	// Wire.end();
 	return value;
 }

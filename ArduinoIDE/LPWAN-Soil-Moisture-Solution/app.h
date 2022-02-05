@@ -116,7 +116,7 @@ union batt_s
 
 /** Accelerometer stuff */
 #include <SparkFunLIS3DH.h>
-#define INT_ACC_PIN WB_IO3
+#define INT_ACC_PIN WB_IO5
 bool init_acc(void);
 void clear_acc_int(void);
 void read_acc(void);
